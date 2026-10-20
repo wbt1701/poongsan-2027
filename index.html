@@ -354,6 +354,16 @@ body.sheet-open .sheet{transform:translate(-50%,0)}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(238,132,54,.6)}100%{box-shadow:0 0 0 12px rgba(238,132,54,0)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}.rv.pre{opacity:1;transform:none}html{scroll-behavior:auto}}
 @media (hover:hover){.ph img:hover,.strip img:hover{transform:scale(1.03)}}
+/* 홍보영상 */
+.vid{padding:30px 16px 34px;background:var(--navy-deep);color:#fff;position:relative}
+.vid-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.vid-head .ey{font-family:var(--f-latin);font-weight:800;font-size:12px;letter-spacing:.2em;color:#9CE3D8}
+.vid-head h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:24px;line-height:1.2}
+.vid-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-md);overflow:hidden;background:#000;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;font-weight:600;color:#CFE0F5;text-decoration:none}
+.vid-link:hover{color:#fff}
+.toc-grid a.wide.vt{background:var(--teal)}
 </style>
 
 </head>
@@ -393,12 +403,20 @@ body.sheet-open .sheet{transform:translate(-50%,0)}
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></div>
 </section>
 
+<!-- 홍보영상 -->
+<section class="vid" id="video" data-name="홍보영상">
+  <div class="vid-head"><span class="ey">VIDEO</span><h2>2027 풍산고 홍보영상</h2></div>
+  <div class="vid-frame"><iframe src="https://www.youtube.com/embed/6Bo5Mf3DNO8?rel=0&amp;playsinline=1" title="2027학년도 풍산고등학교 홍보영상" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+  <a class="vid-link" href="https://youtu.be/6Bo5Mf3DNO8" target="_blank" rel="noopener">▶ 유튜브에서 크게 보기</a>
+</section>
+
 <!-- 목차 -->
 <nav class="toc" id="contents" aria-label="목차">
   <div class="burst" style="top:22px;right:20px;color:rgba(255,255,255,.7)" aria-hidden="true"></div>
   <h2>Contents</h2>
   <p class="sub">궁금한 곳을 누르면 바로 이동해요</p>
   <div class="toc-grid">
+<a href="#video" class="wide vt"><span><b>▶</b> 홍보영상 보기</span><span class="tag">YouTube</span></a>
     <a href="#s1"><b>01</b>학교 소개</a>
     <a href="#s2"><b>02</b>교육과정 안내</a>
     <a href="#s3"><b>03</b>교과 활동 및 행사</a>
@@ -832,7 +850,7 @@ body.sheet-open .sheet{transform:translate(-50%,0)}
   <div class="grab"></div>
   <h3>Contents</h3>
   <ol>
-    <li><a href="#top"><b>↑</b>처음으로</a></li>
+    <li><a href="#top"><b>↑</b>처음으로</a></li><li><a href="#video"><b>▶</b>홍보영상</a></li>
     <li><a href="#s1"><b>01</b>학교 소개</a></li><li><a href="#s2"><b>02</b>교육과정 안내</a></li><li><a href="#s3"><b>03</b>교과 활동 및 행사</a></li>
     <li><a href="#s4"><b>04</b>학생 맞춤형 프로그램 <span style="color:var(--sun)">★</span></a></li><li><a href="#s5"><b>05</b>진로·진학 프로그램 <span style="color:var(--sun)">★</span></a></li><li><a href="#s6"><b>06</b>학생주도 프로그램</a></li>
     <li><a href="#s7"><b>07</b>동아리 활동</a></li><li><a href="#s8"><b>08</b>학년 및 학급 프로그램</a></li><li><a href="#s9"><b>09</b>도서관 프로그램</a></li>
