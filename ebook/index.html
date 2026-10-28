@@ -189,24 +189,30 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   addEventListener('mouseup',()=>{if(mdrag){mdrag=null;stage.classList.remove('drag');}},true);
   stage.addEventListener('dblclick',e=>{if(e.target.closest('.zchip'))return;const [px,py]=rel(e.clientX,e.clientY);zoomAt(px,py,s<1.9?s*2:1,true);});
 
-  // 휴대폰: 두 손가락으로 벌리고 오므리기, 확대된 상태에서 한 손가락으로 이동
+  // 휴대폰: 터치는 모두 여기서 직접 처리(책장 넘기기 기능에 넘기지 않음)
+  //  - 한 손가락으로 옆으로 밀기: 책장 넘기기 (그 동작 중에 두 번째 손가락이 닿으면 넘기지 않음)
+  //  - 두 손가락: 확대·축소, 확대된 상태에서 한 손가락: 이동, 두 번 탭: 2배
   let t=null, lastTap=0;
   const tlist=e=>[...e.touches].map(o=>rel(o.clientX,o.clientY));
   const mid=a=>[(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2], dist=a=>Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);
-  stage.addEventListener('touchstart',e=>{if(e.target.closest('.zchip'))return;const p=tlist(e);
-    if(p.length>=2){e.preventDefault();e.stopPropagation();t={mode:'pinch',m:mid(p),d:dist(p)};return;}
-    if(zoomed()){e.preventDefault();e.stopPropagation();t={mode:'pan',p:p[0],moved:false};return;}
-    t={mode:'flip',p:p[0],moved:false};},{passive:false,capture:true});
-  stage.addEventListener('touchmove',e=>{if(!t)return;const p=tlist(e);
-    if(t.mode==='pinch'&&p.length>=2){e.preventDefault();e.stopPropagation();const m=mid(p),d=dist(p);
-      x+=m[0]-t.m[0];y+=m[1]-t.m[1];zoomAt(m[0],m[1],s*(d/t.d),false);t.m=m;t.d=d;return;}
-    if(t.mode==='pan'&&p.length===1){e.preventDefault();e.stopPropagation();x+=p[0][0]-t.p[0];y+=p[0][1]-t.p[1];t.p=p[0];t.moved=true;apply(false);return;}
-    if(t.mode==='flip'&&p.length===1&&Math.hypot(p[0][0]-t.p[0],p[0][1]-t.p[1])>8)t.moved=true;},{passive:false,capture:true});
-  stage.addEventListener('touchend',e=>{if(!t)return;
-    if(t.mode==='pinch'){if(e.touches.length===1&&zoomed()){t={mode:'pan',p:tlist(e)[0],moved:true};}
-      else if(e.touches.length===0){if(s<1.06)reset(true);t=null;}e.stopPropagation();return;}
-    if(e.touches.length===0){const tap=!t.moved;const pt=t.p;t=null;
-      if(tap){const now=Date.now();if(now-lastTap<300){lastTap=0;e.preventDefault();zoomAt(pt[0],pt[1],s<1.9?2:1,true);}else lastTap=now;}}},{passive:false,capture:true});
+  const skip=e=>e.target.closest('.zchip,.side');
+  stage.addEventListener('touchstart',e=>{if(skip(e))return;e.preventDefault();e.stopPropagation();const p=tlist(e);
+    if(p.length>=2){t={mode:'pinch',m:mid(p),d:dist(p)};return;}
+    if(t&&t.mode==='none')return;
+    t=zoomed()?{mode:'pan',p:p[0],moved:false}:{mode:'swipe',s0:p[0],p:p[0],moved:false};},{passive:false,capture:true});
+  stage.addEventListener('touchmove',e=>{if(!t||skip(e))return;e.preventDefault();e.stopPropagation();const p=tlist(e);
+    if(t.mode==='pinch'&&p.length>=2){const m=mid(p),d=dist(p);x+=m[0]-t.m[0];y+=m[1]-t.m[1];zoomAt(m[0],m[1],s*(d/t.d),false);t.m=m;t.d=d;return;}
+    if(t.mode==='pan'&&p.length===1){x+=p[0][0]-t.p[0];y+=p[0][1]-t.p[1];t.p=p[0];t.moved=true;apply(false);return;}
+    if(t.mode==='swipe'&&p.length===1){t.p=p[0];if(Math.hypot(t.p[0]-t.s0[0],t.p[1]-t.s0[1])>8)t.moved=true;}},{passive:false,capture:true});
+  stage.addEventListener('touchend',e=>{if(!t||skip(e))return;e.preventDefault();e.stopPropagation();const left=e.touches.length;
+    if(t.mode==='pinch'){if(left===0){if(s<1.06)reset(true);t=null;}else{t=zoomed()?{mode:'pan',p:tlist(e)[0],moved:true}:{mode:'none'};}return;}
+    if(left>0)return;
+    const done=t;t=null;
+    if(done.mode==='swipe'){const dx=done.p[0]-done.s0[0],dy=done.p[1]-done.s0[1];
+      if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.2){dx<0?pf.flipNext('bottom'):pf.flipPrev('bottom');return;}}
+    if(done.mode==='none'||done.moved)return;
+    const now=Date.now(),pt=done.p||done.s0;if(now-lastTap<300){lastTap=0;zoomAt(pt[0],pt[1],s<1.9?2:1,true);}else lastTap=now;},{passive:false,capture:true});
+  stage.addEventListener('touchcancel',()=>{t=null;},true);
 
   /* ---------- 이동 버튼·목차: 확대 중이면 먼저 원래 크기로 ---------- */
   const go=fn=>{if(zoomed())reset(false);fn();};
