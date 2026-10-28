@@ -132,7 +132,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   </div>
   <div class="zv" id="zv">
     <div class="zc" id="zc"></div>
-    <div class="zhelp" id="zhelp">휠·두 손가락으로 확대, 끌어서 이동, 두 번 눌러 확대</div>
+    <div class="zhelp" id="zhelp">끌거나 휠로 이동 · Ctrl+휠이나 두 손가락으로 확대</div>
   </div>
 </div>
 
@@ -203,18 +203,22 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   $('zFit').onclick=()=>fit(true);
   zRange.oninput=()=>{const [cx,cy]=center();zoomAt(cx,cy,base*zRange.value/100,false);};
 
-  zv.addEventListener('wheel',e=>{e.preventDefault();const r=zv.getBoundingClientRect();const f=Math.min(1.12,Math.max(0.89,Math.exp(-e.deltaY*0.0012)));zoomAt(e.clientX-r.left,e.clientY-r.top,s*f,false);},{passive:false});
+  zv.addEventListener('wheel',e=>{e.preventDefault();const r=zv.getBoundingClientRect();
+    if(e.ctrlKey){const f=Math.min(1.12,Math.max(0.89,Math.exp(-e.deltaY*0.004)));zoomAt(e.clientX-r.left,e.clientY-r.top,s*f,false);return;}
+    const k=e.deltaMode===1?40:1;x-=(e.shiftKey?e.deltaY:e.deltaX)*k;y-=(e.shiftKey?0:e.deltaY)*k;apply(false);},{passive:false});
 
   // 끌어서 이동 + 두 손가락 확대
-  const pts=new Map();let lastMid=null,lastD=0,moved=false,lastTap=0;
+  const pts=new Map();let lastMid=null,lastD=0,moved=false,lastTap=0,pinched=false;
+  const atFit=()=>s<=base*1.04;
   const rel=e=>{const r=zv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
   function midDist(){const a=[...pts.values()];const m=[(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2];return [m,Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])];}
   zv.addEventListener('pointerdown',e=>{zv.setPointerCapture(e.pointerId);pts.set(e.pointerId,rel(e));moved=false;zv.classList.add('drag');
     if(pts.size===2){[lastMid,lastD]=midDist();}else{lastMid=rel(e);}});
   zv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,rel(e));
-    if(pts.size>=2){const [m,d]=midDist();x+=m[0]-lastMid[0];y+=m[1]-lastMid[1];zoomAt(m[0],m[1],s*(d/(lastD||d)),false);lastMid=m;lastD=d;moved=true;}
+    if(pts.size>=2){pinched=true;const [m,d]=midDist();x+=m[0]-lastMid[0];y+=m[1]-lastMid[1];zoomAt(m[0],m[1],s*(d/(lastD||d)),false);lastMid=m;lastD=d;moved=true;}
     else{const p=rel(e);const dx=p[0]-lastMid[0],dy=p[1]-lastMid[1];if(Math.abs(dx)+Math.abs(dy)>2)moved=true;x+=dx;y+=dy;apply(false);lastMid=p;}});
   function up(e){const p=pts.get(e.pointerId);pts.delete(e.pointerId);if(pts.size===1){lastMid=[...pts.values()][0];}
+    if(pts.size===0&&pinched){pinched=false;if(e.pointerType==='touch'&&atFit()){closeZoom();return;}}
     if(pts.size===0){zv.classList.remove('drag');
       if(!moved&&p){const now=Date.now();if(now-lastTap<320){zoomAt(p[0],p[1],s<base*1.9?s*2:base,true);lastTap=0;}else lastTap=now;}}}
   zv.addEventListener('pointerup',up);zv.addEventListener('pointercancel',up);
@@ -247,7 +251,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
     openZoom();pinch={d:tdist(e.touches),m:tmid(e.touches)};}},{passive:false,capture:true});
   addEventListener('touchmove',e=>{if(!pinch||e.touches.length<2)return;e.preventDefault();const d=tdist(e.touches),mm=tmid(e.touches);
     x+=mm[0]-pinch.m[0];y+=mm[1]-pinch.m[1];zoomAt(mm[0],mm[1],s*(d/pinch.d),false);pinch={d,m:mm};},{passive:false});
-  addEventListener('touchend',e=>{if(pinch&&e.touches.length<2)pinch=null;});
+  addEventListener('touchend',e=>{if(pinch&&e.touches.length<2){pinch=null;if(e.touches.length===0&&atFit())closeZoom();}});
   stage.addEventListener('wheel',e=>{if(!e.ctrlKey||zoom.classList.contains('on'))return;e.preventDefault();openZoom();},{passive:false});
 
   setTimeout(()=>{$('hint').style.opacity='0';},4500);
