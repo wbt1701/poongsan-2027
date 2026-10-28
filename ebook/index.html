@@ -32,7 +32,7 @@ button,select,a{font:inherit;color:inherit}
 .top a.back{flex:none;text-decoration:none;font-size:13px;font-weight:700;background:rgba(255,255,255,.12);border-radius:99px;padding:7px 14px}
 .top a.back:hover{background:rgba(255,255,255,.2)}
 
-.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 12px;position:relative}
+.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 12px;position:relative;touch-action:none}
 #book{margin:0 auto}
 #book .page{background:#fff}
 #book .page img{width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none}
@@ -108,7 +108,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   </nav>
 </div>
 
-<div class="hint" id="hint">책장을 넘기려면 옆으로 밀거나 모서리를 누르세요</div>
+<div class="hint" id="hint">옆으로 밀면 책장이 넘어가고, 두 손가락으로 벌리면 커져요</div>
 
 <div class="sheet-bg" id="sheetBg"></div>
 <div class="sheet" role="dialog" aria-label="목차">
@@ -239,7 +239,18 @@ body.toc-open .sheet{transform:translate(-50%,0)}
     location.hash='p'+(pf.getCurrentPageIndex()+1);location.reload();},400);});
   const m=location.hash.match(/^#p(\d+)$/); if(m){const k=Math.min(N,Math.max(1,+m[1]));setTimeout(()=>{pf.turnToPage(k-1);show();},0);}
 
-  setTimeout(()=>{$('hint').style.opacity='0';},3500);
+  // 책 화면에서 두 손가락으로 벌리면 바로 크게 보기로 이어서 확대(휴대폰). 트랙패드 핀치(ctrl+휠)도 같음
+  let pinch=null;
+  const tdist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  const tmid=t=>{const r=zv.getBoundingClientRect();return [(t[0].clientX+t[1].clientX)/2-r.left,(t[0].clientY+t[1].clientY)/2-r.top];};
+  stage.addEventListener('touchstart',e=>{if(e.touches.length===2&&!zoom.classList.contains('on')){e.preventDefault();e.stopPropagation();
+    openZoom();pinch={d:tdist(e.touches),m:tmid(e.touches)};}},{passive:false,capture:true});
+  addEventListener('touchmove',e=>{if(!pinch||e.touches.length<2)return;e.preventDefault();const d=tdist(e.touches),mm=tmid(e.touches);
+    x+=mm[0]-pinch.m[0];y+=mm[1]-pinch.m[1];zoomAt(mm[0],mm[1],s*(d/pinch.d),false);pinch={d,m:mm};},{passive:false});
+  addEventListener('touchend',e=>{if(pinch&&e.touches.length<2)pinch=null;});
+  stage.addEventListener('wheel',e=>{if(!e.ctrlKey||zoom.classList.contains('on'))return;e.preventDefault();openZoom();},{passive:false});
+
+  setTimeout(()=>{$('hint').style.opacity='0';},4500);
 })();
 </script>
 </body>
