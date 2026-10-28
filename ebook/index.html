@@ -141,8 +141,9 @@ body.toc-open .sheet{transform:translate(-50%,0)}
 (function(){
   const N=24, PW=2480, PH=3307;
   const num=i=>String(i+1).padStart(2,'0');
-  const pages=[...Array(N)].map((_,i)=>'pages/'+num(i)+'.jpg');
-  const hd=[...Array(N)].map((_,i)=>'hd/'+num(i)+'.jpg');
+  const V='?v=20261028b';
+  const pages=[...Array(N)].map((_,i)=>'pages/'+num(i)+'.jpg'+V);
+  const hd=[...Array(N)].map((_,i)=>'hd/'+num(i)+'.jpg'+V);
   const TOC=[['','표지',1],['','목차',3],['01','학교 소개',4],['02','교육과정 안내',5],['03','교과 활동 및 행사',6],['04','학생 맞춤형 프로그램',10],
     ['05','진로·진학 프로그램',12],['06','학생주도 프로그램',14],['07','동아리 활동',15],['08','학년 및 학급 프로그램',16],['09','도서관 프로그램',17],
     ['10','다양한 행사',18],['11','공간 혁신',19],['12','졸업생 추천사',20],['★','2027 신입생 원서접수 안내',22]];
