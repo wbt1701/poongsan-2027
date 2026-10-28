@@ -73,7 +73,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
 .zbar .info{font-size:13px;color:var(--sky);min-width:56px;text-align:center;font-family:var(--f-latin);font-weight:700}
 .zbar .sep{width:1px;height:22px;background:rgba(255,255,255,.2);margin:0 4px}
 .zbar input[type=range]{width:min(220px,30vw)}
-.zv{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab}
+.zv{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .zv.drag{cursor:grabbing}
 .zc{position:absolute;left:0;top:0;transform-origin:0 0;display:flex;gap:0;will-change:transform}
 .zc.anim{transition:transform .22s ease-out}
@@ -132,7 +132,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   </div>
   <div class="zv" id="zv">
     <div class="zc" id="zc"></div>
-    <div class="zhelp" id="zhelp">끌거나 휠로 이동 · Ctrl+휠이나 두 손가락으로 확대</div>
+    <div class="zhelp" id="zhelp">휠로 확대·축소 · 끌어서 이동 · 두 번 누르면 2배</div>
   </div>
 </div>
 
@@ -191,8 +191,8 @@ body.toc-open .sheet{transform:translate(-50%,0)}
     cw=PW*idx.length;ch=PH;$('zInfo').textContent=label(idx)+'쪽';fit(false);}
   function fit(anim){const vw=zv.clientWidth, vh=zv.clientHeight;base=Math.min(vw/cw,vh/ch)*0.96;s=base;x=(vw-cw*s)/2;y=(vh-ch*s)/2;apply(anim);}
   function clamp(){const vw=zv.clientWidth, vh=zv.clientHeight, w=cw*s, h=ch*s;
-    x = w<=vw ? (vw-w)/2 : Math.min(0,Math.max(vw-w,x));
-    y = h<=vh ? (vh-h)/2 : Math.min(0,Math.max(vh-h,y));}
+    x = w<=vw ? Math.min(vw-w,Math.max(0,x)) : Math.min(0,Math.max(vw-w,x));
+    y = h<=vh ? Math.min(vh-h,Math.max(0,y)) : Math.min(0,Math.max(vh-h,y));}
   function apply(anim){clamp();zc.classList.toggle('anim',!!anim);zc.style.transform='translate('+x+'px,'+y+'px) scale('+s+')';
     const p=Math.round(s/base*100);zPct.textContent=p+'%';zRange.value=p;}
   function zoomAt(px,py,ns,anim){ns=Math.max(base,Math.min(base*MAX,ns));x=px-(px-x)*(ns/s);y=py-(py-y)*(ns/s);s=ns;apply(anim);}
@@ -204,8 +204,7 @@ body.toc-open .sheet{transform:translate(-50%,0)}
   zRange.oninput=()=>{const [cx,cy]=center();zoomAt(cx,cy,base*zRange.value/100,false);};
 
   zv.addEventListener('wheel',e=>{e.preventDefault();const r=zv.getBoundingClientRect();
-    if(e.ctrlKey){const f=Math.min(1.12,Math.max(0.89,Math.exp(-e.deltaY*0.004)));zoomAt(e.clientX-r.left,e.clientY-r.top,s*f,false);return;}
-    const k=e.deltaMode===1?40:1;x-=(e.shiftKey?e.deltaY:e.deltaX)*k;y-=(e.shiftKey?0:e.deltaY)*k;apply(false);},{passive:false});
+    const f=Math.min(1.12,Math.max(0.89,Math.exp(-e.deltaY*(e.ctrlKey?0.004:0.0012))));zoomAt(e.clientX-r.left,e.clientY-r.top,s*f,false);},{passive:false});
 
   // 끌어서 이동 + 두 손가락 확대
   const pts=new Map();let lastMid=null,lastD=0,moved=false,lastTap=0,pinched=false;
